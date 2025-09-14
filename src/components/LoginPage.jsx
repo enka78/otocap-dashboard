@@ -1,13 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
-  const [loading, setLoading] = useState(false);
+  const { signIn, loading, user } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, navigate]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -17,16 +25,18 @@ const LoginPage = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     
-    // Simulate login process
-    setTimeout(() => {
-      setLoading(false);
-      // Redirect to dashboard
-      navigate('/dashboard');
-    }, 1000);
+    if (!formData.email || !formData.password) {
+      return;
+    }
+
+    const { data, error } = await signIn(formData.email, formData.password);
+    
+    if (data && !error) {
+      navigate('/dashboard', { replace: true });
+    }
   };
 
   return (

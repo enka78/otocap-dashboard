@@ -1,11 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { ordersService } from '../services/ordersService';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
+  const { user, signOut, loading: authLoading } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/login', { replace: true });
+    }
+  }, [user, authLoading, navigate]);
 
   useEffect(() => {
     loadDashboardData();
@@ -23,9 +32,9 @@ const DashboardPage = () => {
     }
   };
 
-  const handleLogout = () => {
-    // Simulate logout
-    navigate('/login');
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/login', { replace: true });
   };
 
   const handleGenerateReport = () => {

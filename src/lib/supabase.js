@@ -4,7 +4,11 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Missing Supabase environment variables. Please check your .env file.')
+  console.warn('Missing Supabase environment variables. Using placeholder configuration for development.')
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey)
+// Use fallback values for development if env vars are missing
+const url = supabaseUrl || 'https://placeholder.supabase.co'
+const key = supabaseKey || 'placeholder_key'
+
+export const supabase = createClient(url, key)
