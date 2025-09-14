@@ -40,6 +40,7 @@ export const AuthProvider = ({ children }) => {
   const signIn = async (email, password) => {
     try {
       setLoading(true);
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -47,14 +48,14 @@ export const AuthProvider = ({ children }) => {
 
       if (error) throw error;
 
-      // Check if user has admin role
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
+      // Check if user has admin role from user_roles table
+      const { data: userRole, error: roleError } = await supabase
+        .from('user_roles')
         .select('role')
-        .eq('id', data.user.id)
+        .eq('user_id', data.user.id)
         .single();
 
-      if (profileError || profile?.role !== 'admin') {
+      if (roleError || userRole?.role !== 'admin') {
         await supabase.auth.signOut();
         throw new Error('Erişim reddedildi. Yönetici yetkileri gerekli.');
       }
