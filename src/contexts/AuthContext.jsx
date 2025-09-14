@@ -48,12 +48,13 @@ export const AuthProvider = ({ children }) => {
 
       if (error) throw error;
 
-      // Check if user has admin role from user_roles table
+      // Check if user has admin role from user_roles table and check if role is admin
       const { data: userRole, error: roleError } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', data.user.id)
         .single();
+
 
       if (roleError || userRole?.role !== 'admin') {
         await supabase.auth.signOut();
