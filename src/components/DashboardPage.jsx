@@ -1,20 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { Link } from 'react-router-dom';
 import { ordersService } from '../services/ordersService';
+import Sidebar from './Sidebar';
+import PageHeader from './PageHeader';
 
 const DashboardPage = () => {
-  const navigate = useNavigate();
-  const { user, signOut, loading: authLoading } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/login', { replace: true });
-    }
-  }, [user, authLoading, navigate]);
 
   useEffect(() => {
     loadDashboardData();
@@ -30,11 +22,6 @@ const DashboardPage = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleLogout = async () => {
-    await signOut();
-    navigate('/login', { replace: true });
   };
 
   const handleGenerateReport = () => {
@@ -251,70 +238,11 @@ const DashboardPage = () => {
 
   return (
     <div className="dashboard-layout">
-      {/* Sidebar */}
-      <aside className="sidebar">
-        <div className="sidebar-title">
-          Otocap Dashboard
-        </div>
-        <nav>
-          <ul className="nav-menu">
-            <li className="nav-item">
-              <Link to="/dashboard" className="nav-link active">
-                📊 Dashboard
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/orders" className="nav-link">
-                📦 Siparişler
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/categories" className="nav-link">
-                📂 Kategoriler
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/brands" className="nav-link">
-                🏷️ Markalar
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/products" className="nav-link">
-                🛍️ Ürünler
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/blogs" className="nav-link">
-                📝 Bloglar
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/banners" className="nav-link">
-                🎯 Bannerlar
-              </Link>
-            </li>
-            <li className="nav-item">
-              <button 
-                onClick={handleLogout}
-                className="nav-link"
-                style={{ 
-                  background: 'none', 
-                  border: 'none', 
-                  width: '100%', 
-                  textAlign: 'left',
-                  color: '#d1d5db'
-                }}
-              >
-                🚪 Çıkış Yap
-              </button>
-            </li>
-          </ul>
-        </nav>
-      </aside>
+      <Sidebar />
 
       {/* Main Content */}
       <main className="main-content">
-        <h1 className="page-title">Dashboard</h1>
+        <PageHeader title="Dashboard" />
         
         {/* Stats Grid */}
         <div className="stats-grid">

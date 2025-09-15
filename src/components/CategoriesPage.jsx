@@ -1,18 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import { categoriesService } from '../services/categoriesService';
+import Sidebar from './Sidebar';
+import PageHeader from './PageHeader';
 
 const CategoriesPage = () => {
-  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  const handleLogout = () => {
-    navigate('/login');
-  };
 
   useEffect(() => {
     loadCategories();
@@ -81,82 +77,19 @@ const CategoriesPage = () => {
 
   return (
     <div className="dashboard-layout">
-      {/* Sidebar */}
-      <aside className="sidebar">
-        <div className="sidebar-title">
-          Otocap Dashboard
-        </div>
-        <nav>
-          <ul className="nav-menu">
-            <li className="nav-item">
-              <Link to="/dashboard" className="nav-link">
-                📊 Dashboard
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/orders" className="nav-link">
-                📦 Siparişler
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/categories" className="nav-link active">
-                📂 Kategoriler
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/brands" className="nav-link">
-                🏷️ Markalar
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/products" className="nav-link">
-                🛍️ Ürünler
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/blogs" className="nav-link">
-                📝 Bloglar
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/banners" className="nav-link">
-                🎯 Bannerlar
-              </Link>
-            </li>
-            <li className="nav-item">
-              <button 
-                onClick={handleLogout}
-                className="nav-link"
-                style={{ 
-                  background: 'none', 
-                  border: 'none', 
-                  width: '100%', 
-                  textAlign: 'left',
-                  color: '#d1d5db'
-                }}
-              >
-                🚪 Çıkış Yap
-              </button>
-            </li>
-          </ul>
-        </nav>
-      </aside>
+      <Sidebar />
 
       {/* Main Content */}
       <main className="main-content">
-        <div className="orders-header">
-          <h1 className="page-title">Kategori Yönetimi</h1>
-          <button 
-            className="btn-success"
-            onClick={() => {
-              setShowForm(true);
-              setEditingCategory(null);
-              setFormData({ name: '', order: '' });
-            }}
-          >
-            ➕ Yeni Kategori
-          </button>
-        </div>
+        <PageHeader 
+          title="Kategori Yönetimi"
+          onAddNew={() => {
+            setShowForm(true);
+            setEditingCategory(null);
+            setFormData({ name: '', order: '' });
+          }}
+          addButtonText="Yeni Kategori"
+        />
 
         {/* Search */}
         <div style={{ marginBottom: '2rem' }}>

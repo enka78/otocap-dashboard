@@ -1,19 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import { bannersService } from '../services/bannersService';
 import { supabase } from '../lib/supabase';
+import Sidebar from './Sidebar';
+import PageHeader from './PageHeader';
 
 const BannersPage = () => {
-  const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
   const [editingBanner, setEditingBanner] = useState(null);
   const [loading, setLoading] = useState(true);
   const [banners, setBanners] = useState([]);
   const [uploading, setUploading] = useState(false);
-
-  const handleLogout = () => {
-    navigate('/login');
-  };
 
   useEffect(() => {
     loadBanners();
@@ -88,6 +84,13 @@ const BannersPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Resim zorunlu kontrolü
+    if (!formData.image) {
+      alert('Banner resmi zorunludur! Lütfen bir resim yükleyin.');
+      return;
+    }
+    
     try {
       if (editingBanner) {
         const result = await bannersService.updateBanner(editingBanner.id, formData);
@@ -170,91 +173,28 @@ const BannersPage = () => {
 
   return (
     <div className="dashboard-layout">
-      {/* Sidebar */}
-      <aside className="sidebar">
-        <div className="sidebar-title">
-          Otocap Dashboard
-        </div>
-        <nav>
-          <ul className="nav-menu">
-            <li className="nav-item">
-              <Link to="/dashboard" className="nav-link">
-                📊 Dashboard
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/orders" className="nav-link">
-                📦 Siparişler
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/categories" className="nav-link">
-                📂 Kategoriler
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/brands" className="nav-link">
-                🏷️ Markalar
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/products" className="nav-link">
-                🛍️ Ürünler
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/blogs" className="nav-link">
-                📝 Bloglar
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/banners" className="nav-link active">
-                🎯 Bannerlar
-              </Link>
-            </li>
-            <li className="nav-item">
-              <button 
-                onClick={handleLogout}
-                className="nav-link"
-                style={{ 
-                  background: 'none', 
-                  border: 'none', 
-                  width: '100%', 
-                  textAlign: 'left',
-                  color: '#d1d5db'
-                }}
-              >
-                🚪 Çıkış Yap
-              </button>
-            </li>
-          </ul>
-        </nav>
-      </aside>
+      <Sidebar />
 
       {/* Main Content */}
       <main className="main-content">
-        <div className="orders-header">
-          <h1 className="page-title">Banner Yönetimi</h1>
-          <button 
-            className="btn-success"
-            onClick={() => {
-              setShowForm(true);
-              setEditingBanner(null);
-              setFormData({
-                title: '',
-                sub_title: '',
-                btn_text: '',
-                add_link: '',
-                add_button: false,
-                image: '',
-                start_date: '',
-                end_date: ''
-              });
-            }}
-          >
-            ➕ Yeni Banner
-          </button>
-        </div>
+        <PageHeader 
+          title="Banner Yönetimi"
+          onAddNew={() => {
+            setShowForm(true);
+            setEditingBanner(null);
+            setFormData({
+              title: '',
+              sub_title: '',
+              btn_text: '',
+              add_link: '',
+              add_button: false,
+              image: '',
+              start_date: '',
+              end_date: ''
+            });
+          }}
+          addButtonText="Yeni Banner"
+        />
 
         {/* Search Removed */}
 
@@ -377,10 +317,11 @@ const BannersPage = () => {
                         margin: '0 0 0.5rem 0',
                         fontSize: '1.125rem',
                         fontWeight: '600',
-                        color: '#1f2937',
-                        lineHeight: '1.4'
+                        color: banner.title ? '#1f2937' : '#9ca3af',
+                        lineHeight: '1.4',
+                        fontStyle: banner.title ? 'normal' : 'italic'
                       }}>
-                        {banner.title}
+                        {banner.title || 'Başlıksız Banner'}
                       </h3>
                       {banner.sub_title && (
                         <p style={{
@@ -513,8 +454,7 @@ const BannersPage = () => {
               </h2>
               
               {/* Banner Preview */}
-              {(formData.title || formData.image) && (
-                <div style={{
+              <div style={{
                   marginBottom: '2rem',
                   padding: '1rem',
                   border: '1px solid #e5e7eb',
@@ -531,7 +471,7 @@ const BannersPage = () => {
                     backgroundColor: 'white',
                     maxWidth: '300px'
                   }}>
-                    {formData.image && (
+                    {formData.image ? (
                       <div style={{ height: '120px', backgroundColor: '#f3f4f6', overflow: 'hidden' }}>
                         <img
                           src={`https://cfqzjghngplhzybrbvej.supabase.co/storage/v1/object/public/banner-images/${formData.image}`}
@@ -546,11 +486,30 @@ const BannersPage = () => {
                           }}
                         />
                       </div>
+                    ) : (
+                      <div style={{
+                        height: '120px',
+                        backgroundColor: '#fee2e2',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#dc2626',
+                        fontSize: '0.875rem',
+                        fontWeight: '500'
+                      }}>
+                        ⚠️ Resim gerekli!
+                      </div>
                     )}
                     <div style={{ padding: '1rem' }}>
-                      {formData.title && (
-                        <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem', fontWeight: '600' }}>
-                          {formData.title}
+                      {(formData.title || formData.sub_title) && (
+                        <h4 style={{ 
+                          margin: '0 0 0.5rem 0', 
+                          fontSize: '1rem', 
+                          fontWeight: '600',
+                          color: formData.title ? '#1f2937' : '#9ca3af',
+                          fontStyle: formData.title ? 'normal' : 'italic'
+                        }}>
+                          {formData.title || 'Başlıksız Banner'}
                         </h4>
                       )}
                       {formData.sub_title && (
@@ -574,19 +533,18 @@ const BannersPage = () => {
                     </div>
                   </div>
                 </div>
-              )}
               
               <form onSubmit={handleSubmit}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <div className="form-group">
-                    <label className="form-label">Başlık</label>
+                    <label className="form-label">Başlık (Opsiyonel)</label>
                     <input
                       type="text"
                       name="title"
                       value={formData.title}
                       onChange={handleInputChange}
                       className="form-input"
-                      required
+                      placeholder="Banner başlığı girin (opsiyonel)"
                     />
                   </div>
 
@@ -649,13 +607,14 @@ const BannersPage = () => {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Banner Resmi</label>
+                  <label className="form-label">Banner Resmi *</label>
                   <div style={{ marginBottom: '1rem' }}>
                     <input
                       type="file"
                       accept="image/*"
                       onChange={handleImageUpload}
                       disabled={uploading}
+                      required={!formData.image}
                       style={{
                         width: '100%',
                         padding: '0.5rem',
@@ -696,6 +655,7 @@ const BannersPage = () => {
                     className="form-input"
                     placeholder="veya resim dosya adını manuel girin"
                     style={{ fontSize: '0.875rem' }}
+                    required
                   />
                 </div>
 

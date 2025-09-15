@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import TiptapEditor from './TiptapEditor';
 import { productsService } from '../services/productsService';
 import { categoriesService } from '../services/categoriesService';
 import { brandsService } from '../services/brandsService';
+import Sidebar from './Sidebar';
+import PageHeader from './PageHeader';
 
 const ProductsPage = () => {
-  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -30,10 +30,6 @@ const ProductsPage = () => {
   const [imageFiles, setImageFiles] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
-
-  const handleLogout = () => {
-    navigate('/login');
-  };
 
   useEffect(() => {
     loadData();
@@ -248,81 +244,18 @@ const ProductsPage = () => {
 
   return (
     <div className="dashboard-layout">
-      {/* Sidebar */}
-      <aside className="sidebar">
-        <div className="sidebar-title">
-          Otocap Dashboard
-        </div>
-        <nav>
-          <ul className="nav-menu">
-            <li className="nav-item">
-              <Link to="/dashboard" className="nav-link">
-                📊 Dashboard
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/orders" className="nav-link">
-                📦 Siparişler
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/categories" className="nav-link">
-                📂 Kategoriler
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/brands" className="nav-link">
-                🏷️ Markalar
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/products" className="nav-link active">
-                🛍️ Ürünler
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/blogs" className="nav-link">
-                📝 Bloglar
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/banners" className="nav-link">
-                🎯 Bannerlar
-              </Link>
-            </li>
-            <li className="nav-item">
-              <button 
-                onClick={handleLogout}
-                className="nav-link"
-                style={{ 
-                  background: 'none', 
-                  border: 'none', 
-                  width: '100%', 
-                  textAlign: 'left',
-                  color: '#d1d5db'
-                }}
-              >
-                🚪 Çıkış Yap
-              </button>
-            </li>
-          </ul>
-        </nav>
-      </aside>
+      <Sidebar />
 
       {/* Main Content */}
       <main className="main-content">
-        <div className="orders-header">
-          <h1 className="page-title">Ürün Yönetimi</h1>
-          <button 
-            className="btn-success"
-            onClick={() => {
-              resetForm();
-              setShowForm(true);
-            }}
-          >
-            ➕ Yeni Ürün
-          </button>
-        </div>
+        <PageHeader 
+          title="Ürün Yönetimi"
+          onAddNew={() => {
+            resetForm();
+            setShowForm(true);
+          }}
+          addButtonText="Yeni Ürün"
+        />
 
         {/* Search */}
         <div style={{ marginBottom: '2rem' }}>

@@ -13,6 +13,7 @@ import BrandsPage from './components/BrandsPage';
 import ProductsPage from './components/ProductsPage';
 import BlogsPage from './components/BlogsPage';
 import BannersPage from './components/BannersPage';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
@@ -22,13 +23,13 @@ function App() {
           <Routes>
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/orders" element={<OrdersPage />} />
-            <Route path="/categories" element={<CategoriesPage />} />
-            <Route path="/brands" element={<BrandsPage />} />
-            <Route path="/products" element={<ProductsPage />} />
-            <Route path="/blogs" element={<BlogsPage />} />
-            <Route path="/banners" element={<BannersPage />} />
+            <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+            <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
+            <Route path="/categories" element={<ProtectedRoute><CategoriesPage /></ProtectedRoute>} />
+            <Route path="/brands" element={<ProtectedRoute><BrandsPage /></ProtectedRoute>} />
+            <Route path="/products" element={<ProtectedRoute><ProductsPage /></ProtectedRoute>} />
+            <Route path="/blogs" element={<ProtectedRoute><BlogsPage /></ProtectedRoute>} />
+            <Route path="/banners" element={<ProtectedRoute><BannersPage /></ProtectedRoute>} />
           </Routes>
         </div>
         <Toaster 
