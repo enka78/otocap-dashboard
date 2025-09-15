@@ -1,21 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import { blogsService } from '../services/blogsService';
 import { supabase } from '../lib/supabase';
 import TiptapEditor from './TiptapEditor';
+import Sidebar from './Sidebar';
+import PageHeader from './PageHeader';
 
 const BlogsPage = () => {
-  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingBlog, setEditingBlog] = useState(null);
   const [loading, setLoading] = useState(true);
   const [blogs, setBlogs] = useState([]);
   const [uploading, setUploading] = useState(false);
-
-  const handleLogout = () => {
-    navigate('/login');
-  };
 
   useEffect(() => {
     loadBlogs();
@@ -148,89 +144,26 @@ const BlogsPage = () => {
 
   return (
     <div className="dashboard-layout">
-      {/* Sidebar */}
-      <aside className="sidebar">
-        <div className="sidebar-title">
-          Otocap Dashboard
-        </div>
-        <nav>
-          <ul className="nav-menu">
-            <li className="nav-item">
-              <Link to="/dashboard" className="nav-link">
-                📊 Dashboard
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/orders" className="nav-link">
-                📦 Siparişler
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/categories" className="nav-link">
-                📂 Kategoriler
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/brands" className="nav-link">
-                🏷️ Markalar
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/products" className="nav-link">
-                🛍️ Ürünler
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/blogs" className="nav-link active">
-                📝 Bloglar
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/banners" className="nav-link">
-                🎯 Bannerlar
-              </Link>
-            </li>
-            <li className="nav-item">
-              <button 
-                onClick={handleLogout}
-                className="nav-link"
-                style={{ 
-                  background: 'none', 
-                  border: 'none', 
-                  width: '100%', 
-                  textAlign: 'left',
-                  color: '#d1d5db'
-                }}
-              >
-                🚪 Çıkış Yap
-              </button>
-            </li>
-          </ul>
-        </nav>
-      </aside>
+      <Sidebar />
 
       {/* Main Content */}
       <main className="main-content">
-        <div className="orders-header">
-          <h1 className="page-title">Blog Yönetimi</h1>
-          <button 
-            className="btn-success"
-            onClick={() => {
-              setShowForm(true);
-              setEditingBlog(null);
-              setFormData({
-                title: '',
-                sub_title: '',
-                description: '',
-                image: '',
-                is_featured: false,
-                order: ''
-              });
-            }}
-          >
-            ➕ Yeni Blog
-          </button>
-        </div>
+        <PageHeader 
+          title="Blog Yönetimi"
+          onAddNew={() => {
+            setShowForm(true);
+            setEditingBlog(null);
+            setFormData({
+              title: '',
+              sub_title: '',
+              description: '',
+              image: '',
+              is_featured: false,
+              order: ''
+            });
+          }}
+          addButtonText="Yeni Blog"
+        />
 
         {/* Blogs Grid */}
         <div style={{
