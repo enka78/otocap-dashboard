@@ -19,6 +19,7 @@ const Sidebar = () => {
   const menuItems = [
     { path: '/dashboard', icon: '📊', label: 'Dashboard' },
     { path: '/orders', icon: '📦', label: 'Siparişler' },
+    { path: '/users', icon: '👥', label: 'Üyeler' },
     { path: '/categories', icon: '📂', label: 'Kategoriler' },
     { path: '/brands', icon: '🏷️', label: 'Markalar' },
     { path: '/products', icon: '🛍️', label: 'Ürünler' },
