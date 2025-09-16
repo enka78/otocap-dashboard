@@ -13,6 +13,7 @@ import BrandsPage from './components/BrandsPage';
 import ProductsPage from './components/ProductsPage';
 import BlogsPage from './components/BlogsPage';
 import BannersPage from './components/BannersPage';
+import UsersPage from './components/UsersPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
             <Route path="/products" element={<ProtectedRoute><ProductsPage /></ProtectedRoute>} />
             <Route path="/blogs" element={<ProtectedRoute><BlogsPage /></ProtectedRoute>} />
             <Route path="/banners" element={<ProtectedRoute><BannersPage /></ProtectedRoute>} />
+            <Route path="/users" element={<ProtectedRoute><UsersPage /></ProtectedRoute>} />
           </Routes>
         </div>
         <Toaster 
