@@ -55,11 +55,37 @@ const OrdersPage = () => {
     return statusTranslations[statusName] || statusName;
   };
 
-  const filteredOrders = orders.filter(order => 
-    order.user?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.id.toString().includes(searchTerm) ||
-    order.products?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const parseUser = (userJson) => {
+    try {
+      if (!userJson) return null;
+      const user = typeof userJson === 'string' ? JSON.parse(userJson) : userJson;
+      return user;
+    } catch (error) {
+      console.error('Error parsing user JSON:', error);
+      return null;
+    }
+  };
+
+  const getUserDisplayName = (userJson) => {
+    const user = parseUser(userJson);
+    return user?.name || user?.email || 'Bilinmiyor';
+  };
+
+  const filteredOrders = orders.filter(order => {
+    const user = parseUser(order.user);
+    const searchLower = searchTerm.toLowerCase();
+    
+    return (
+      order.id.toString().includes(searchTerm) ||
+      user?.name?.toLowerCase().includes(searchLower) ||
+      user?.email?.toLowerCase().includes(searchLower) ||
+      user?.phone?.toLowerCase().includes(searchLower) ||
+      user?.address?.toLowerCase().includes(searchLower) ||
+      user?.district?.toLowerCase().includes(searchLower) ||
+      user?.city?.toLowerCase().includes(searchLower) ||
+      order.products?.toLowerCase().includes(searchLower)
+    );
+  });
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('tr-TR', {
@@ -196,6 +222,7 @@ const OrdersPage = () => {
   const handlePrintOrder = (order) => {
     const printWindow = window.open('', '_blank');
     const products = parseProducts(order.products);
+    const user = parseUser(order.user);
     const orderDate = new Date(order.created_at).toLocaleDateString('tr-TR');
     const orderTime = new Date(order.created_at).toLocaleTimeString('tr-TR');
     
@@ -273,9 +300,23 @@ const OrdersPage = () => {
           .detail-label {
             font-weight: 500;
             color: #4b5563;
+            min-width: 120px;
           }
           .detail-value {
             color: #1f2937;
+            flex: 1;
+            text-align: right;
+          }
+          .customer-details {
+            grid-column: 1 / -1;
+            background: #f0f9ff;
+            border: 1px solid #0ea5e9;
+          }
+          .address-full {
+            margin-top: 5px;
+            font-size: 14px;
+            color: #374151;
+            line-height: 1.4;
           }
           .products-table {
             width: 100%;
@@ -374,12 +415,59 @@ const OrdersPage = () => {
         </div>
         
         <div class="order-details">
+          ${user ? `
+          <div class="detail-section customer-details">
+            <div class="detail-title">👤 Müşteri Bilgileri</div>
+            ${user.name ? `
+            <div class="detail-item">
+              <span class="detail-label">Ad Soyad:</span>
+              <span class="detail-value" style="font-weight: bold;">${user.name}</span>
+            </div>` : ''}
+            ${user.email ? `
+            <div class="detail-item">
+              <span class="detail-label">Email:</span>
+              <span class="detail-value">${user.email}</span>
+            </div>` : ''}
+            ${user.phone ? `
+            <div class="detail-item">
+              <span class="detail-label">Telefon:</span>
+              <span class="detail-value">${user.phone}</span>
+            </div>` : ''}
+            ${(user.address || user.district || user.city || user.postal_code || user.country) ? `
+            <div class="detail-item" style="align-items: flex-start;">
+              <span class="detail-label">Adres:</span>
+              <div class="detail-value address-full">
+                ${[user.address, user.district, user.city, user.postal_code, user.country].filter(Boolean).join(', ')}
+              </div>
+            </div>` : ''}
+            ${user.delivery_type ? `
+            <div class="detail-item">
+              <span class="detail-label">Teslimat Türü:</span>
+              <span class="detail-value">${user.delivery_type}</span>
+            </div>` : ''}
+            ${user.online_support !== undefined ? `
+            <div class="detail-item">
+              <span class="detail-label">Online Destek:</span>
+              <span class="detail-value" style="color: ${user.online_support ? '#059669' : '#dc2626'}; font-weight: bold;">
+                ${user.online_support ? '✓ Evet' : '✗ Hayır'}
+              </span>
+            </div>` : ''}
+            ${user.special_notes ? `
+            <div class="detail-item" style="align-items: flex-start;">
+              <span class="detail-label">Özel Notlar:</span>
+              <div class="detail-value" style="font-style: italic; color: #374151;">${user.special_notes}</div>
+            </div>` : ''}
+          </div>` : `
           <div class="detail-section">
-            <div class="detail-title">Sipariş Bilgileri</div>
+            <div class="detail-title">Müşteri Bilgileri</div>
             <div class="detail-item">
               <span class="detail-label">Müşteri:</span>
-              <span class="detail-value">${order.user || 'Belirtilmemiş'}</span>
+              <span class="detail-value">Belirtilmemiş</span>
             </div>
+          </div>`}
+          
+          <div class="detail-section">
+            <div class="detail-title">📋 Sipariş Bilgileri</div>
             <div class="detail-item">
               <span class="detail-label">Sipariş Tarihi:</span>
               <span class="detail-value">${orderDate}</span>
@@ -396,17 +484,13 @@ const OrdersPage = () => {
                 </span>
               </span>
             </div>
-          </div>
-          
-          <div class="detail-section">
-            <div class="detail-title">Teslimat Bilgileri</div>
             <div class="detail-item">
               <span class="detail-label">Teslimat Tarihi:</span>
               <span class="detail-value">${order.delivery_date || 'Belirtilmemiş'}</span>
             </div>
             <div class="detail-item">
               <span class="detail-label">Toplam Tutar:</span>
-              <span class="detail-value" style="font-weight: bold; color: #059669;">
+              <span class="detail-value" style="font-weight: bold; color: #059669; font-size: 18px;">
                 ${formatCurrency(order.total || 0)}
               </span>
             </div>
@@ -558,7 +642,23 @@ const OrdersPage = () => {
                       {/* Main order row */}
                       <tr>
                         <td>#{order.id}</td>
-                        <td>{order.user || 'Bilinmiyor'}</td>
+                        <td>
+                          <div style={{ minWidth: '200px' }}>
+                            <div style={{ fontWeight: '600', color: '#1f2937', marginBottom: '2px' }}>
+                              {getUserDisplayName(order.user)}
+                            </div>
+                            {parseUser(order.user)?.email && (
+                              <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                                {parseUser(order.user).email}
+                              </div>
+                            )}
+                            {parseUser(order.user)?.phone && (
+                              <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                                📞 {parseUser(order.user).phone}
+                              </div>
+                            )}
+                          </div>
+                        </td>
                         <td style={{ color: '#6b7280', fontSize: '0.875rem' }}>
                           {parseProducts(order.products).length} ürün
                         </td>
@@ -625,15 +725,124 @@ const OrdersPage = () => {
                           backgroundColor: '#fafbfc',
                           borderBottom: '2px solid #e5e7eb'
                         }}>
-                          <div style={{ 
-                            fontSize: '0.75rem', 
-                            color: '#6b7280', 
-                            marginBottom: '0.25rem',
-                            fontWeight: '500'
-                          }}>
-                            Sipariş Ürünleri:
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '1rem' }}>
+                            {/* User Information */}
+                            <div>
+                              <div style={{ 
+                                fontSize: '0.75rem', 
+                                color: '#6b7280', 
+                                marginBottom: '0.5rem',
+                                fontWeight: '600',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px'
+                              }}>
+                                👤 Kullanıcı Bilgileri:
+                              </div>
+                              {parseUser(order.user) ? (
+                                <div style={{ 
+                                  background: 'white', 
+                                  padding: '1rem', 
+                                  borderRadius: '8px',
+                                  border: '1px solid #e5e7eb',
+                                  fontSize: '0.875rem'
+                                }}>
+                                  <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '0.5rem', alignItems: 'start' }}>
+                                    {parseUser(order.user).name && (
+                                      <>
+                                        <span style={{ fontWeight: '500', color: '#6b7280' }}>Ad Soyad:</span>
+                                        <span style={{ color: '#1f2937', fontWeight: '500' }}>{parseUser(order.user).name}</span>
+                                      </>
+                                    )}
+                                    {parseUser(order.user).email && (
+                                      <>
+                                        <span style={{ fontWeight: '500', color: '#6b7280' }}>Email:</span>
+                                        <span style={{ color: '#1f2937' }}>{parseUser(order.user).email}</span>
+                                      </>
+                                    )}
+                                    {parseUser(order.user).phone && (
+                                      <>
+                                        <span style={{ fontWeight: '500', color: '#6b7280' }}>Telefon:</span>
+                                        <span style={{ color: '#1f2937' }}>{parseUser(order.user).phone}</span>
+                                      </>
+                                    )}
+                                    {parseUser(order.user).address && (
+                                      <>
+                                        <span style={{ fontWeight: '500', color: '#6b7280' }}>Adres:</span>
+                                        <span style={{ color: '#1f2937' }}>{parseUser(order.user).address}</span>
+                                      </>
+                                    )}
+                                    {parseUser(order.user).district && (
+                                      <>
+                                        <span style={{ fontWeight: '500', color: '#6b7280' }}>İlçe:</span>
+                                        <span style={{ color: '#1f2937' }}>{parseUser(order.user).district}</span>
+                                      </>
+                                    )}
+                                    {parseUser(order.user).city && (
+                                      <>
+                                        <span style={{ fontWeight: '500', color: '#6b7280' }}>Şehir:</span>
+                                        <span style={{ color: '#1f2937' }}>{parseUser(order.user).city}</span>
+                                      </>
+                                    )}
+                                    {parseUser(order.user).postal_code && (
+                                      <>
+                                        <span style={{ fontWeight: '500', color: '#6b7280' }}>Posta Kodu:</span>
+                                        <span style={{ color: '#1f2937' }}>{parseUser(order.user).postal_code}</span>
+                                      </>
+                                    )}
+                                    {parseUser(order.user).country && (
+                                      <>
+                                        <span style={{ fontWeight: '500', color: '#6b7280' }}>Ülke:</span>
+                                        <span style={{ color: '#1f2937' }}>{parseUser(order.user).country}</span>
+                                      </>
+                                    )}
+                                    {parseUser(order.user).delivery_type && (
+                                      <>
+                                        <span style={{ fontWeight: '500', color: '#6b7280' }}>Teslimat Türü:</span>
+                                        <span style={{ color: '#1f2937' }}>{parseUser(order.user).delivery_type}</span>
+                                      </>
+                                    )}
+                                    {parseUser(order.user).online_support !== undefined && (
+                                      <>
+                                        <span style={{ fontWeight: '500', color: '#6b7280' }}>Online Destek:</span>
+                                        <span style={{ color: parseUser(order.user).online_support ? '#059669' : '#dc2626', fontWeight: '500' }}>
+                                          {parseUser(order.user).online_support ? '✓ Evet' : '✗ Hayır'}
+                                        </span>
+                                      </>
+                                    )}
+                                    {parseUser(order.user).special_notes && (
+                                      <>
+                                        <span style={{ fontWeight: '500', color: '#6b7280' }}>Özel Notlar:</span>
+                                        <span style={{ color: '#1f2937', fontStyle: 'italic' }}>{parseUser(order.user).special_notes}</span>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              ) : (
+                                <div style={{ 
+                                  color: '#6b7280', 
+                                  fontStyle: 'italic',
+                                  padding: '0.5rem'
+                                }}>
+                                  Kullanıcı bilgisi mevcut değil
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* Products Information */}
+                            <div>
+                              <div style={{ 
+                                fontSize: '0.75rem', 
+                                color: '#6b7280', 
+                                marginBottom: '0.5rem',
+                                fontWeight: '600',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px'
+                              }}>
+                                📦 Sipariş Ürünleri:
+                              </div>
+                              {renderProducts(order.products)}
+                            </div>
                           </div>
-                          {renderProducts(order.products)}
                         </td>
                       </tr>
                     </React.Fragment>

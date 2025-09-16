@@ -47,11 +47,37 @@ const OrderList = () => {
     await loadOrders();
   };
 
-  const filteredOrders = orders.filter(order => 
-    order.user_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.id.toString().includes(searchTerm) ||
-    order.products?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const parseUser = (userJson) => {
+    try {
+      if (!userJson) return null;
+      const user = typeof userJson === 'string' ? JSON.parse(userJson) : userJson;
+      return user;
+    } catch (error) {
+      console.error('Error parsing user JSON:', error);
+      return null;
+    }
+  };
+
+  const getUserDisplayName = (userJson) => {
+    const user = parseUser(userJson);
+    return user?.name || user?.email || 'N/A';
+  };
+
+  const filteredOrders = orders.filter(order => {
+    const user = parseUser(order.user);
+    const searchLower = searchTerm.toLowerCase();
+    
+    return (
+      order.id.toString().includes(searchTerm) ||
+      user?.name?.toLowerCase().includes(searchLower) ||
+      user?.email?.toLowerCase().includes(searchLower) ||
+      user?.phone?.toLowerCase().includes(searchLower) ||
+      user?.address?.toLowerCase().includes(searchLower) ||
+      user?.district?.toLowerCase().includes(searchLower) ||
+      user?.city?.toLowerCase().includes(searchLower) ||
+      order.products?.toLowerCase().includes(searchLower)
+    );
+  });
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -214,7 +240,15 @@ const OrderList = () => {
                       #{order.id}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {order.user_name || 'N/A'}
+                      <div>
+                        <div className="font-medium">{getUserDisplayName(order.user)}</div>
+                        {parseUser(order.user)?.email && (
+                          <div className="text-xs text-gray-500">{parseUser(order.user).email}</div>
+                        )}
+                        {parseUser(order.user)?.phone && (
+                          <div className="text-xs text-gray-500">📞 {parseUser(order.user).phone}</div>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {formatCurrency(order.total, order.currency)}
