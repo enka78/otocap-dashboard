@@ -169,7 +169,7 @@ const DashboardPage = () => {
               ${orders.slice(0, 10).map(order => `
                 <tr>
                   <td>#${order.id}</td>
-                  <td>${order.user || 'Bilinmiyor'}</td>
+                  <td>${getUserDisplayName(order.user)}</td>
                   <td>${formatCurrency(order.total || 0)}</td>
                   <td>${order.status?.display_name || order.status?.name || 'Beklemede'}</td>
                   <td>${new Date(order.created_at).toLocaleDateString('tr-TR')}</td>
@@ -201,6 +201,24 @@ const DashboardPage = () => {
       style: 'currency',
       currency: 'TRY'
     }).format(amount);
+  };
+
+  // Added helper function to parse user JSON
+  const parseUser = (userJson) => {
+    try {
+      if (!userJson) return null;
+      const user = typeof userJson === 'string' ? JSON.parse(userJson) : userJson;
+      return user;
+    } catch (error) {
+      console.error('Error parsing user JSON:', error);
+      return null;
+    }
+  };
+
+  // Added helper function to get user display name
+  const getUserDisplayName = (userJson) => {
+    const user = parseUser(userJson);
+    return user?.name || user?.email || 'Bilinmiyor';
   };
 
   // Calculate statistics from real data
@@ -318,7 +336,7 @@ const DashboardPage = () => {
                     }}
                   >
                     <div style={{ fontWeight: '500', color: '#1f2937' }}>
-                      Sipariş #{order.id} - {order.user || 'Bilinmeyen müşteri'}
+                      Sipariş #{order.id} - {getUserDisplayName(order.user)}
                     </div>
                     <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
                       {formatCurrency(order.total || 0)} - {timeText}

@@ -80,9 +80,9 @@ const OrdersPage = () => {
       user?.name?.toLowerCase().includes(searchLower) ||
       user?.email?.toLowerCase().includes(searchLower) ||
       user?.phone?.toLowerCase().includes(searchLower) ||
-      user?.address?.toLowerCase().includes(searchLower) ||
-      user?.district?.toLowerCase().includes(searchLower) ||
-      user?.city?.toLowerCase().includes(searchLower) ||
+      user?.address?.full_address?.toLowerCase().includes(searchLower) ||
+      user?.address?.district?.toLowerCase().includes(searchLower) ||
+      user?.address?.city?.toLowerCase().includes(searchLower) ||
       order.products?.toLowerCase().includes(searchLower)
     );
   });
@@ -657,6 +657,18 @@ const OrdersPage = () => {
                                 📞 {parseUser(order.user).phone}
                               </div>
                             )}
+                            {/* Display full address */}
+                            {parseUser(order.user)?.address && (
+                              <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '2px' }}>
+                                📍 {[
+                                  parseUser(order.user).address.full_address,
+                                  parseUser(order.user).address.district,
+                                  parseUser(order.user).address.city,
+                                  parseUser(order.user).address.postal_code,
+                                  parseUser(order.user).address.country
+                                ].filter(Boolean).join(', ')}
+                              </div>
+                            )}
                           </div>
                         </td>
                         <td style={{ color: '#6b7280', fontSize: '0.875rem' }}>
@@ -765,10 +777,13 @@ const OrdersPage = () => {
                                         <span style={{ color: '#1f2937' }}>{parseUser(order.user).phone}</span>
                                       </>
                                     )}
-                                    {parseUser(order.user).address && (
+                                    {parseUser(order.user)?.address && (
                                       <>
                                         <span style={{ fontWeight: '500', color: '#6b7280' }}>Adres:</span>
-                                        <span style={{ color: '#1f2937' }}>{parseUser(order.user).address}</span>
+                                        <span style={{ color: '#1f2937' }}>
+                                          {/* Updated to show full address properly */}
+                                          {[parseUser(order.user).address.full_address, parseUser(order.user).address.district, parseUser(order.user).address.city, parseUser(order.user).address.postal_code, parseUser(order.user).address.country].filter(Boolean).join(', ')}
+                                        </span>
                                       </>
                                     )}
                                     {parseUser(order.user).district && (
