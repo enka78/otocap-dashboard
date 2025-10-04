@@ -20,9 +20,14 @@ export const bannersService = {
   // Create new banner
   async createBanner(bannerData) {
     try {
+      // Ensure we're not sending undefined values
+      const cleanBannerData = Object.fromEntries(
+        Object.entries(bannerData).filter(([_, value]) => value !== undefined)
+      );
+      
       const { data, error } = await supabase
         .from('banners')
-        .insert([bannerData])
+        .insert([cleanBannerData])
         .select()
         .single();
 
@@ -37,9 +42,14 @@ export const bannersService = {
   // Update existing banner
   async updateBanner(id, bannerData) {
     try {
+      // Ensure we're not sending undefined values
+      const cleanBannerData = Object.fromEntries(
+        Object.entries(bannerData).filter(([_, value]) => value !== undefined)
+      );
+      
       const { data, error } = await supabase
         .from('banners')
-        .update(bannerData)
+        .update(cleanBannerData)
         .eq('id', id)
         .select()
         .single();

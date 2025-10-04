@@ -35,6 +35,7 @@ const BannersPage = () => {
     add_link: '',
     add_button: false,
     image: '',
+    mobile_image: '',
     start_date: '',
     end_date: ''
   });
@@ -47,7 +48,7 @@ const BannersPage = () => {
     }));
   };
 
-  const handleImageUpload = async (e) => {
+  const handleImageUpload = async (e, isMobile = false) => {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -70,7 +71,7 @@ const BannersPage = () => {
       // Update form data with new filename
       setFormData(prev => ({
         ...prev,
-        image: fileName
+        [isMobile ? 'mobile_image' : 'image']: fileName
       }));
       
       alert('Resim başarıyla yüklendi!');
@@ -85,9 +86,9 @@ const BannersPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Resim zorunlu kontrolü
-    if (!formData.image) {
-      alert('Banner resmi zorunludur! Lütfen bir resim yükleyin.');
+    // Either image or mobile_image is required
+    if (!formData.image && !formData.mobile_image) {
+      alert('En az bir banner resmi (masaüstü veya mobil) yüklemelisiniz!');
       return;
     }
     
@@ -112,6 +113,7 @@ const BannersPage = () => {
         add_link: '',
         add_button: false,
         image: '',
+        mobile_image: '',
         start_date: '',
         end_date: ''
       });
@@ -127,14 +129,15 @@ const BannersPage = () => {
   const handleEdit = (banner) => {
     setEditingBanner(banner);
     setFormData({
-      title: banner.title,
-      sub_title: banner.sub_title,
-      btn_text: banner.btn_text,
-      add_link: banner.add_link,
-      add_button: banner.add_button,
-      image: banner.image,
-      start_date: banner.start_date,
-      end_date: banner.end_date
+      title: banner.title || '',
+      sub_title: banner.sub_title || '',
+      btn_text: banner.btn_text || '',
+      add_link: banner.add_link || '',
+      add_button: banner.add_button || false,
+      image: banner.image || '',
+      mobile_image: banner.mobile_image || '', // Add mobile_image field with fallback
+      start_date: banner.start_date || '',
+      end_date: banner.end_date || ''
     });
     setShowForm(true);
   };
@@ -189,6 +192,7 @@ const BannersPage = () => {
               add_link: '',
               add_button: false,
               image: '',
+              mobile_image: '',
               start_date: '',
               end_date: ''
             });
@@ -268,10 +272,12 @@ const BannersPage = () => {
                   justifyContent: 'center',
                   overflow: 'hidden'
                 }}>
-                  {banner.image ? (
+                  {banner.image || banner.mobile_image ? (
                     <>
                       <img
-                        src={`https://cfqzjghngplhzybrbvej.supabase.co/storage/v1/object/public/banner-images/${banner.image}`}
+                        src={banner.image 
+                          ? `https://cfqzjghngplhzybrbvej.supabase.co/storage/v1/object/public/banner-images/${banner.image}`
+                          : `https://cfqzjghngplhzybrbvej.supabase.co/storage/v1/object/public/banner-images/${banner.mobile_image}`}
                         alt={banner.title}
                         style={{
                           width: '100%',
@@ -464,72 +470,153 @@ const BannersPage = () => {
                   <h3 style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem' }}>
                     👁️ Banner Önizlemesi
                   </h3>
-                  <div style={{
-                    border: '1px solid #d1d5db',
-                    borderRadius: '8px',
-                    overflow: 'hidden',
-                    backgroundColor: 'white',
-                    maxWidth: '300px'
-                  }}>
-                    {formData.image ? (
-                      <div style={{ height: '120px', backgroundColor: '#f3f4f6', overflow: 'hidden' }}>
-                        <img
-                          src={`https://cfqzjghngplhzybrbvej.supabase.co/storage/v1/object/public/banner-images/${formData.image}`}
-                          alt="Önizleme"
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover'
-                          }}
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                          }}
-                        />
-                      </div>
-                    ) : (
-                      <div style={{
-                        height: '120px',
-                        backgroundColor: '#fee2e2',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#dc2626',
-                        fontSize: '0.875rem',
-                        fontWeight: '500'
-                      }}>
-                        ⚠️ Resim gerekli!
-                      </div>
-                    )}
-                    <div style={{ padding: '1rem' }}>
-                      {(formData.title || formData.sub_title) && (
-                        <h4 style={{ 
-                          margin: '0 0 0.5rem 0', 
-                          fontSize: '1rem', 
-                          fontWeight: '600',
-                          color: formData.title ? '#1f2937' : '#9ca3af',
-                          fontStyle: formData.title ? 'normal' : 'italic'
-                        }}>
-                          {formData.title || 'Başlıksız Banner'}
-                        </h4>
-                      )}
-                      {formData.sub_title && (
-                        <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.875rem', color: '#6b7280' }}>
-                          {formData.sub_title}
-                        </p>
-                      )}
-                      {formData.add_button && formData.btn_text && (
-                        <button style={{
-                          padding: '0.5rem 1rem',
-                          backgroundColor: '#3b82f6',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
+                  
+                  {/* Desktop Preview */}
+                  <div style={{ marginBottom: '1rem' }}>
+                    <h4 style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.5rem' }}>
+                      Masaüstü Görünümü:
+                    </h4>
+                    <div style={{
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      backgroundColor: 'white',
+                      maxWidth: '300px'
+                    }}>
+                      {formData.image ? (
+                        <div style={{ height: '120px', backgroundColor: '#f3f4f6', overflow: 'hidden' }}>
+                          <img
+                            src={`https://cfqzjghngplhzybrbvej.supabase.co/storage/v1/object/public/banner-images/${formData.image}`}
+                            alt="Masaüstü Önizleme"
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover'
+                            }}
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <div style={{
+                          height: '120px',
+                          backgroundColor: '#fee2e2',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#dc2626',
                           fontSize: '0.875rem',
-                          cursor: 'default'
+                          fontWeight: '500'
                         }}>
-                          {formData.btn_text}
-                        </button>
+                          ⚠️ Masaüstü resmi gerekli!
+                        </div>
                       )}
+                      <div style={{ padding: '1rem' }}>
+                        {(formData.title || formData.sub_title) && (
+                          <h4 style={{ 
+                            margin: '0 0 0.5rem 0', 
+                            fontSize: '1rem', 
+                            fontWeight: '600',
+                            color: formData.title ? '#1f2937' : '#9ca3af',
+                            fontStyle: formData.title ? 'normal' : 'italic'
+                          }}>
+                            {formData.title || 'Başlıksız Banner'}
+                          </h4>
+                        )}
+                        {formData.sub_title && (
+                          <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.875rem', color: '#6b7280' }}>
+                            {formData.sub_title}
+                          </p>
+                        )}
+                        {formData.add_button && formData.btn_text && (
+                          <button style={{
+                            padding: '0.5rem 1rem',
+                            backgroundColor: '#3b82f6',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            fontSize: '0.875rem',
+                            cursor: 'default'
+                          }}>
+                            {formData.btn_text}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Mobile Preview */}
+                  <div>
+                    <h4 style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.5rem' }}>
+                      Mobil Görünümü:
+                    </h4>
+                    <div style={{
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      backgroundColor: 'white',
+                      maxWidth: '150px'
+                    }}>
+                      {formData.mobile_image ? (
+                        <div style={{ height: '120px', backgroundColor: '#f3f4f6', overflow: 'hidden' }}>
+                          <img
+                            src={`https://cfqzjghngplhzybrbvej.supabase.co/storage/v1/object/public/banner-images/${formData.mobile_image}`}
+                            alt="Mobil Önizleme"
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover'
+                            }}
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <div style={{
+                          height: '120px',
+                          backgroundColor: '#e5e7eb',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#6b7280',
+                          fontSize: '0.75rem'
+                        }}>
+                          📱 Mobil resmi yok
+                        </div>
+                      )}
+                      <div style={{ padding: '0.75rem' }}>
+                        {(formData.title || formData.sub_title) && (
+                          <h4 style={{ 
+                            margin: '0 0 0.25rem 0', 
+                            fontSize: '0.75rem', 
+                            fontWeight: '600',
+                            color: formData.title ? '#1f2937' : '#9ca3af',
+                            fontStyle: formData.title ? 'normal' : 'italic'
+                          }}>
+                            {formData.title || 'Başlıksız Banner'}
+                          </h4>
+                        )}
+                        {formData.sub_title && (
+                          <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.7rem', color: '#6b7280' }}>
+                            {formData.sub_title}
+                          </p>
+                        )}
+                        {formData.add_button && formData.btn_text && (
+                          <button style={{
+                            padding: '0.25rem 0.5rem',
+                            backgroundColor: '#3b82f6',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            fontSize: '0.7rem',
+                            cursor: 'default'
+                          }}>
+                            {formData.btn_text}
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -607,14 +694,13 @@ const BannersPage = () => {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Banner Resmi *</label>
+                  <label className="form-label">Banner Resmi * (Masaüstü)</label>
                   <div style={{ marginBottom: '1rem' }}>
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={handleImageUpload}
+                      onChange={(e) => handleImageUpload(e, false)}
                       disabled={uploading}
-                      required={!formData.image}
                       style={{
                         width: '100%',
                         padding: '0.5rem',
@@ -656,6 +742,58 @@ const BannersPage = () => {
                     placeholder="veya resim dosya adını manuel girin"
                     style={{ fontSize: '0.875rem' }}
                     required
+                  />
+                </div>
+
+                {/* Mobile Image Upload Section */}
+                <div className="form-group">
+                  <label className="form-label">Mobil Banner Resmi</label>
+                  <div style={{ marginBottom: '1rem' }}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(e, true)}
+                      disabled={uploading}
+                      style={{
+                        width: '100%',
+                        padding: '0.5rem',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '4px',
+                        fontSize: '0.875rem'
+                      }}
+                    />
+                    {uploading && (
+                      <div style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: '#3b82f6' }}>
+                        Yükleniyor...
+                      </div>
+                    )}
+                    {formData.mobile_image && (
+                      <div style={{ marginTop: '0.5rem' }}>
+                        <img
+                          src={`https://cfqzjghngplhzybrbvej.supabase.co/storage/v1/object/public/banner-images/${formData.mobile_image}`}
+                          alt="Mobil Önizleme"
+                          style={{
+                            width: '60px',
+                            height: '100px',
+                            objectFit: 'cover',
+                            borderRadius: '4px',
+                            border: '1px solid #d1d5db'
+                          }}
+                        />
+                        <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>
+                          Mevcut: {formData.mobile_image}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <input
+                    type="text"
+                    name="mobile_image"
+                    value={formData.mobile_image}
+                    onChange={handleInputChange}
+                    className="form-input"
+                    placeholder="veya mobil resim dosya adını manuel girin"
+                    style={{ fontSize: '0.875rem' }}
                   />
                 </div>
 
